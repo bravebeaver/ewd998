@@ -35,13 +35,16 @@ VARIABLE
       pending
 
 \* the spec's variable
-var == << active, pending >>
+vars == << active, pending >>
 
 \* for all variables in var, initialize them to their initial values
 Init == 
-      \* no node is active and there is no message pending
-    /\ active [Nodes -> FALSE]
+     \* all nodes are active and there is no message pending
+    /\ active \in [Nodes -> TRUE]
     /\ pending \in [Nodes -> 0]
+    \* or element wise.
+    \* /\ active = [n \in Nodes |-> TRUE]
+    \* /\ pending = [n \in Nodes |-> 0]
 
 \* TLA+ does not enforce type, and it is best to enforce that yourself
 TypeOK == 
@@ -51,14 +54,25 @@ TypeOK ==
 \* define behavior which move the state forward.
 \* two or more actions do not happen simultaneously. 
 \* to model behavior happened at two nodes at once, the action needs to be at proper granularity with the parameters
-SendMsg(n, m) == 
-    TRUE
 
+\* node n terminates
 Terminate(n) == 
-    TRUE
+    /\ active[n] 
+    /\ active' = [ active EXCEPT ![n] = FALSE ]
+    /\ UNCHANGED pending
+
+SendMsg(m, n) == 
+    \* TODO You should now be able to specify SendMsg and Wakeup (Note that the @
+    \* TODO symbol refers to the old value in a function update).
+    /\ active[m]
+    /\ pending' = [ pending EXCEPT ![n] = @ + 1 ]
+    /\ UNCHANGED active
+
 
 RcvMsg(n) == 
-    TRUE
+    /\ pending[n] > 0
+    /\ pending' = [ pending EXCEPT ![n] = @ - 2 ]
+    /\ active' = [ active EXCEPT ![n] = TRUE ]
 
 =============================================================================
 \* Modification History
