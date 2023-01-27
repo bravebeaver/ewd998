@@ -24,24 +24,41 @@ CONSTANT N
  \* * upon startup.
 ASSUME NIsPosNat == N \in Nat \ {0}
 
-\* TODO Fire up the TLA+ repl (`tlcrepl` in the Terminal > New Terminal) and 
- \* TODO find out what TLC returns for the following expressions:
- \* TODO 23 = "frob"                        \* errored, not even false
- \* TODO 23 # "frob"                       \* # is pretty-printed as ≠
- \* TODO {1,2,2,3,3} = {3,1,1,2,3,1}
- \* TODO 1 \div 4
- \* TODO 1 \div 0
- \* TODO {1,2,3} \cap {2,3,4}              \* \cap pp'ed as ∩
- \* TODO {1,2,3} \cup {2,3,4}              \* \cap pp'ed as ∪
- \* TODO {1,2,3} \ {2,3,4}
- \* TODO 23 \in {0}                        \* \in pp'ed as ∈
- \* TODO 23 \in {23, "frob"}
- \* TODO 23 \in {"frob", 23}
- \* TODO 23 \in {23} \ 23
- \* TODO 23 \in {23} \ {23}
- \* TODO 23 \notin {23} \ {23}
- \* TODO 10 \in 1..10
- \* TODO 1 \in 1..0
+\* a ring of nodes
+Nodes == 0 .. N-1 
+
+
+VARIABLE 
+      \* maintain the activation status of our nodes
+      active, 
+      \* the  in-flight messages from other nodes that the node has yet to receive
+      pending
+
+\* the spec's variable
+var == << active, pending >>
+
+\* for all variables in var, initialize them to their initial values
+Init == 
+      \* no node is active and there is no message pending
+    /\ active [Nodes -> FALSE]
+    /\ pending \in [Nodes -> 0]
+
+\* TLA+ does not enforce type, and it is best to enforce that yourself
+TypeOK == 
+    /\ active \in [Nodes -> BOOLEAN]
+    /\ pending \in [Nodes -> Nat]
+
+\* define behavior which move the state forward.
+\* two or more actions do not happen simultaneously. 
+\* to model behavior happened at two nodes at once, the action needs to be at proper granularity with the parameters
+SendMsg(n, m) == 
+    TRUE
+
+Terminate(n) == 
+    TRUE
+
+RcvMsg(n) == 
+    TRUE
 
 =============================================================================
 \* Modification History
