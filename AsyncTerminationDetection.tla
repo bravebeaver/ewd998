@@ -40,8 +40,8 @@ vars == << active, pending >>
 \* for all variables in var, initialize them to their initial values
 Init == 
      \* all nodes are active and there is no message pending
-    /\ active \in [Nodes -> TRUE]
-    /\ pending \in [Nodes -> 0]
+    /\ active \in [ Nodes -> {TRUE} ]
+    /\ pending \in [ Nodes -> {0} ]
     \* or element wise.
     \* /\ active = [n \in Nodes |-> TRUE]
     \* /\ pending = [n \in Nodes |-> 0]
@@ -71,9 +71,21 @@ SendMsg(m, n) ==
 
 RcvMsg(n) == 
     /\ pending[n] > 0
-    /\ pending' = [ pending EXCEPT ![n] = @ - 2 ]
+    /\ pending' = [ pending EXCEPT ![n] = @ - 2 ] \* why 2?
     /\ active' = [ active EXCEPT ![n] = TRUE ]
 
+\* Recall that it’s a predicate on two states — the current and the next — which is true if the next state is acceptable.
+Next == 
+    \* TODO Have TLC check this spec:
+     \* TODO 1) Without its `-deadlock` command-line parameter
+     \* TODO 2) With the `-deadlock` command-line parameter
+     \* TODO 3) Without `-deadlock` but a disjunct `UNCHANGED vars` added below
+     \* TODO Why does the state space appear infinite even though N is fixed?
+    \E m, n \in Nodes: 
+        \/ Terminate(m)
+        \/ RcvMsg(n)
+        \/ SendMsg(m, n)
+        
 =============================================================================
 \* Modification History
 \* Created Sun Jan 10 15:19:20 CET 2021 by Stephan Merz @muenchnerkindl
